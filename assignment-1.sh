@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 USERID=$(id -u)
 TIMESTAMP=$(date +%F-%H-%M-%S)
 SCRIPT_NAME=$(echo $0 | cut -d "." -f1)
@@ -9,8 +8,6 @@ R="\e[31m"
 G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
-echo "Please enter DB password:"
-read -s mysql_root_password
 
 VALIDATE(){
    if [ $1 -ne 0 ]
@@ -31,31 +28,14 @@ else
 fi
 
 
-# dnf install mysql-server -y &>>$LOGFILE
-# VALIDATE $? "Installing MySQL Server"
+dnf install mysql-server -y &>>$LOGFILE
+VALIDATE $? "Installing MySQL Server"
 
-# systemctl enable mysqld &>>$LOGFILE
-# VALIDATE $? "Enabling MySQL Server"
+systemctl enable mysqld &>>$LOGFILE
+VALIDATE $? "Enabling MySQL Server"
 
-# systemctl start mysqld &>>$LOGFILE
-# VALIDATE $? "Starting MySQL Server"
-
-# # mysql_secure_installation --set-root-pass ExpenseApp@1 &>>$LOGFILE
-# # VALIDATE $? "Setting up root password"
-
-# #Below code will be useful for idempotent nature
-# mysql -h db.mohansaivenna.cloud -uroot -p${mysql_root_password} -e 'show databases;' &>>$LOGFILE
-# if [ $? -ne 0 ]
-# then
-#     mysql_secure_installation --set-root-pass ${mysql_root_password} &>>$LOGFILE
-#     VALIDATE $? "MySQL Root password Setup"
-# else
-#     echo -e "MySQL Root password is already setup...$Y SKIPPING $N"
-# fi
-
-###########
-#Now Installing Backend commands
-##########
+systemctl start mysqld &>>$LOGFILE
+VALIDATE $? "Starting MySQL Server"
 
 dnf module disable nodejs -y &>>$LOGFILE
 VALIDATE $? "Disabling default nodejs"
@@ -66,47 +46,11 @@ VALIDATE $? "Enabling nodejs:20 version"
 dnf install nodejs -y &>>$LOGFILE
 VALIDATE $? "Installing nodejs"
 
-id expense &>>$LOGFILE
-if [ $? -ne 0 ]
-then
-    useradd expense &>>$LOGFILE
-    VALIDATE $? "Creating expense user"
-else
-    echo -e "Expense user already created...$Y SKIPPING $N"
-fi
+dnf install nginx -y &>>$LOGFILE
+VALIDATE $? "Installing nginx"
 
-mkdir -p /app &>>$LOGFILE
-VALIDATE $? "Creating app directory"
+systemctl enable nginx &>>$LOGFILE
+VALIDATE $? "Enabling nginx"
 
-curl -o /tmp/backend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip &>>$LOGFILE
-VALIDATE $? "Downloading backend code"
-
-cd /app
-#rm -rf /app/*
-unzip /tmp/backend.zip &>>$LOGFILE
-VALIDATE $? "Extracted backend code"
-
-npm install &>>$LOGFILE
-VALIDATE $? "Installing nodejs dependencies"
-
-#check your repo and path
-cp /home/ec2-user/shell-scripting/backend.service /etc/systemd/system/backend.service &>>$LOGFILE
-VALIDATE $? "Copied backend service"
-
-systemctl daemon-reload &>>$LOGFILE
-VALIDATE $? "Daemon Reload"
-
-systemctl start backend &>>$LOGFILE
-VALIDATE $? "Starting backend"
-
-systemctl enable backend &>>$LOGFILE
-VALIDATE $? "Enabling backend"
-
-dnf install mysql -y &>>$LOGFILE
-VALIDATE $? "Installing MySQL Client"
-
-mysql -h db.mohansaivenna.cloud -uroot -p${mysql_root_password}
-VALIDATE $? "Schema loading"
-
-systemctl restart backend &>>$LOGFILE
-VALIDATE $? "Restarting Backend"
+systemctl start nginx &>>$LOGFILE
+VALIDATE $? "Starting nginx"
