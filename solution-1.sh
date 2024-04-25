@@ -20,4 +20,4 @@ fi
 # Use sort and uniq -c to count occurrences of each word
 # Use sort -nr to sort by count in descending order
 # Use head -n 5 to get the top 5 most frequent words
-cat "$filename" | tr -sc '[:alnum:]' '\n' | sort | uniq -c | sort -nr | head -n 5
+cat "$filename" | sort | uniq -c | sort -nr | head -n 5
