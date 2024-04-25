@@ -15,4 +15,4 @@ if [ ! -f "$filename" ]; then
 fi
 
 #reading from file and giving count
-cat "$filename" | sort | uniq -c | sort -nr | head -n 5
+cat "$filename" | tr -sc '[:alnum:]' '\n' | sort | uniq -c | sort -nr | head -n 5
