@@ -15,4 +15,4 @@ if [ ! -f "$filename" ]; then
 fi
 
 # Call word_count.sh with the filename
-./word_count.sh "$filename"
+./solution.sh "$filename"
