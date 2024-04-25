@@ -14,4 +14,5 @@ if [ ! -f "$filename" ]; then
     exit 1
 fi
 
+#reading from file and giving count
 cat "$filename" | sort | uniq -c | sort -nr | head -n 5
